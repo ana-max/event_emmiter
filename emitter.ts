@@ -1,5 +1,7 @@
 
-export class EventListener {
+type FunctionArguments<T> = [T] extends [(...args: infer U) => any] ? U : [T] extends [void] ? [] : [T]
+
+export class EventEmitter<EventsType> {
     private listeners: Object;
 
     constructor() {
@@ -17,11 +19,12 @@ export class EventListener {
     * Multiple calls passing the same combination of eventName and listener will result in the
     * listener being added, and called, multiple times.
     * */
-    on(eventName: string | symbol, listener: Function) {
-        if (!this.listeners[eventName]) {
-            this.listeners[eventName] = [];
+    on<E extends keyof EventsType>(eventName: E, listener: EventsType[E]): this {
+        const name: string = String(eventName);
+        if (!this.listeners[name]) {
+            this.listeners[name] = [];
         }
-        this.listeners[eventName].push(listener);
+        this.listeners[name].push(listener);
         return this;
     }
 
@@ -35,11 +38,12 @@ export class EventListener {
     * in the order they were registered, passing the supplied arguments to each.
     * Returns true if the event had listeners, false otherwise.
     * */
-    emit(eventName: string | symbol, ...handlerArgs: any) {
-        if (!this.listeners[eventName]) return false;
-        const listeners = [...this.listeners[eventName]]
+    emit<E extends keyof EventsType>(eventName: E, ...handlerArgs: FunctionArguments<EventsType[E]>): boolean {
+        const name: string = String(eventName);
+        if (!this.listeners[name]) return false;
+        const listeners = [...this.listeners[name]];
         for (const handler of listeners) {
-            handler(handlerArgs);
+            handler(...handlerArgs);
         }
         return true;
     }
@@ -52,9 +56,10 @@ export class EventListener {
     *
     * Removes the specified listener from the listener array for the event named eventName.
     * */
-    removeListener(eventName: string, handler?: Function) {
-        const index = this.listeners[eventName].indexOf(handler);
-        if (index > -1) this.listeners[eventName].splice(index, 1);
+    removeListener<E extends keyof EventsType>(eventName: E, listener: EventsType[E]): this {
+        const name: string = String(eventName);
+        const index = this.listeners[name].indexOf(listener);
+        if (index > -1) this.listeners[name].splice(index, 1);
         return this;
     }
 
@@ -65,8 +70,10 @@ export class EventListener {
     *
     * Removes all listeners, or those of the specified eventName.
     * */
-    removeAllListeners(eventName?: string | symbol) {
-        if (eventName) this.listeners[eventName] = []
-        else this.listeners = {}
+    removeAllListeners<E extends keyof EventsType>(eventName: E, listener: EventsType[E]): this {
+        const name: string = String(eventName);
+        if (eventName) this.listeners[name] = [];
+        else this.listeners = {};
+        return this;
     }
 }

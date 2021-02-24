@@ -1,41 +1,18 @@
-const emmiter = require('./emmiter');
+import { EventEmitter } from "./emitter";
 
-const eventListener = new emmiter.EventListener();
-const callbackA = () => {
-    console.log('A');
-    eventListener.removeListener('event', callbackB);
-};
+const eventListener = new EventEmitter<{
+    'hello': (s: string) => void;
+    'name': (s: string, n: number) => void;
+}>();
 
-const callbackB = () => {
-    console.log('B');
-};
+//OK
+eventListener.on('hello', (str: string) => console.log(str));
+eventListener.on('name', (s, n) => console.log(s, n))
 
-eventListener.on('event', callbackA);
+eventListener.emit('hello', 'a');
+eventListener.emit('name', 'a', 2);
 
-eventListener.on('event', callbackB);
-
-console.log('test1: ')
-// callbackA removes listener callbackB but it will still be called.
-// Internal listener array at time of emit [callbackA, callbackB]
-eventListener.emit('event');
-// Prints:
-//   A
-//   B
-
-console.log('test2: ')
-// callbackB is now removed.
-// Internal listener array [callbackA]
-eventListener.emit('event');
-// Prints:
-//   A
-
-console.log('test3: ')
-eventListener.removeAllListeners('not existing event');
-eventListener.emit('event');
-// Prints:
-// A
-
-console.log('test4: ')
-eventListener.removeAllListeners();
-eventListener.emit('event');
-// Prints nothing
+//Error
+// eventListener.on('dsd', (str: string) => console.log(str));
+// eventListener.emit('hello');
+// eventListener.emit('name', 'a', '2');
