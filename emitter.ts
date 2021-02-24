@@ -70,7 +70,7 @@ export class EventEmitter<EventsType> {
     *
     * Removes all listeners, or those of the specified eventName.
     * */
-    removeAllListeners<E extends keyof EventsType>(eventName: E, listener: EventsType[E]): this {
+    removeAllListeners<E extends keyof EventsType>(eventName: E): this {
         const name: string = String(eventName);
         if (eventName) this.listeners[name] = [];
         else this.listeners = {};
